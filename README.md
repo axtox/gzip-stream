@@ -1,5 +1,5 @@
 # GZipStream
-### Programm for compress and decompress files
+### Programm for compress and decompress files (C#)
 
 Launch this program from console and add arguments like this:
 
