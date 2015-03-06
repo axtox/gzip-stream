@@ -3,10 +3,10 @@
 
 Launch this program from console and add arguments like this:
 
-Usage example: 
-  (*) compress [FILE_PATH] [ZIP_PATH]
-  (*) decompress [ZIPPED_FILE_PATH] [RESULT_FILE_PATH]
-
+<ul>Usage example: 
+  <li> compress [FILE_PATH] [ZIP_PATH] </li>
+  <li> decompress [ZIPPED_FILE_PATH] [RESULT_FILE_PATH] </li>
+</ul>
 Where: 
   (*) compress/decompres are commands;
   (*) FILE_PATH - path to file that must be compressed;
