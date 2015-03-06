@@ -5,8 +5,8 @@ Created: 14 Feburary 2015
 Launch this program from console and add arguments like this:
 <br>
 Usage example:
-* <code>compress [FILE_PATH] [ZIP_PATH]</code>
-* <code>decompress [ZIPPED_FILE_PATH] [RESULT_FILE_PATH]</code>
+* <b><i>compress [FILE_PATH] [ZIP_PATH]</b></i>
+* <b><i>decompress [ZIPPED_FILE_PATH] [RESULT_FILE_PATH]</b></i>
 
 
 Where: <ul> <li> <b><i>compress/decompres</b></i> are commands; </li>
