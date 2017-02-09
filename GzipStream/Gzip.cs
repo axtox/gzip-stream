@@ -6,7 +6,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace GZipStream
+namespace GzipStreamDemo
 {
 	/*
 	 * Класс для работы в мультипроцессорной
@@ -21,8 +21,8 @@ namespace GZipStream
 		 * затем второй поток исключает один блок
 		 * из очереди для дальнейшей конвертации.
 		 */
-		public static Queue<byte[]> crossWriteBuffer = new Queue<byte[]>();
-		public static bool reachedEnd = false;
+		public static Queue<byte[]> CrossWriteBuffer = new Queue<byte[]>();
+		public static bool ReachedEnd = false;
 
 		/*
 		 * Чтение файла и запись считанного блока
@@ -30,61 +30,61 @@ namespace GZipStream
 		 * обработки в writeCompressed.
 		 * Остальные методы работают по аналогии.
 		 */
-		public void doRead(string pathToFile) {
+		public void DoRead(string pathToFile) {
 			using (var fsInput = new FileStream(pathToFile, FileMode.Open, FileAccess.Read)) {
-				var localBuffer = new Byte[Constants.bufferSize];
+				var localBuffer = new byte[Constants.BufferSize];
 				int temp;
 				do {
-					lock (crossWriteBuffer) {
+					lock (CrossWriteBuffer) {
 						temp = fsInput.Read(localBuffer, 0, localBuffer.Length);
-						enqueueBuffer(localBuffer);
-						Monitor.Pulse(crossWriteBuffer);	//Дать сигнал о готовности блока к записи
-						Monitor.Wait(crossWriteBuffer);		//Ждать сигнала о записи очередного блока
+						EnqueueBuffer(localBuffer);
+						Monitor.Pulse(CrossWriteBuffer);	//Дать сигнал о готовности блока к записи
+						Monitor.Wait(CrossWriteBuffer);		//Ждать сигнала о записи очередного блока
 					}
 				} while (temp > 0);
-				setReachedEndStatus(true);
+				SetReachedEndStatus(true);
 			}
 		}
 
-		public void writeCompressed(string destinationPath) {
+		public void WriteCompressed(string destinationPath) {
 			using (var fsOutput = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
-			using (var gzipStream = new GZipStream(fsOutput, CompressionMode.Compress)) {
-				while (!reachedEnd || crossWriteBuffer.Count != 0) {
-					lock (crossWriteBuffer) {
-						var localBuffer = dequeueBuffer();
+			using (var gzipStream = new System.IO.Compression.GZipStream(fsOutput, CompressionMode.Compress)) {
+				while (!ReachedEnd || CrossWriteBuffer.Count != 0) {
+					lock (CrossWriteBuffer) {
+						var localBuffer = DequeueBuffer();
 						gzipStream.Write(localBuffer, 0, localBuffer.Length);
-						Monitor.Pulse(crossWriteBuffer);					//Дать сигнал о записи блока
-						if (!reachedEnd) Monitor.Wait(crossWriteBuffer);	//Ждать сигнала о готовности очередного блока (если не был достигнут конец файла)
+						Monitor.Pulse(CrossWriteBuffer);					//Дать сигнал о записи блока
+						if (!ReachedEnd) Monitor.Wait(CrossWriteBuffer);	//Ждать сигнала о готовности очередного блока (если не был достигнут конец файла)
 					}
 				}
 			}
 		}
 
-		public void doReadCompressed(string pathToCompressedFile) {
+		public void DoReadCompressed(string pathToCompressedFile) {
 			using (var fsInput = new FileStream(pathToCompressedFile, FileMode.Open, FileAccess.Read))
 			using (var gzipStream = new GZipStream(fsInput, CompressionMode.Decompress)) {
-				var buffer = new byte[Constants.bufferSize];
+				var buffer = new byte[Constants.BufferSize];
 				int temp;
 				do {
-					lock (crossWriteBuffer) {
+					lock (CrossWriteBuffer) {
 						temp = gzipStream.Read(buffer, 0, buffer.Length);
-						enqueueBuffer(buffer);
-						Monitor.Pulse(crossWriteBuffer);
-						Monitor.Wait(crossWriteBuffer);
+						EnqueueBuffer(buffer);
+						Monitor.Pulse(CrossWriteBuffer);
+						Monitor.Wait(CrossWriteBuffer);
 					}
 				} while (temp > 0);
 			}
-			setReachedEndStatus(true);
+			SetReachedEndStatus(true);
 		}
 
-		public void writeDecompressed(string destinationPath) {
+		public void WriteDecompressed(string destinationPath) {
 			using (var fsOutput = new FileStream(destinationPath, FileMode.Create, FileAccess.Write)) {
-				while (!reachedEnd || crossWriteBuffer.Count != 0) {
-					lock (crossWriteBuffer) {
-						var localBuffer = dequeueBuffer();
+				while (!ReachedEnd || CrossWriteBuffer.Count != 0) {
+					lock (CrossWriteBuffer) {
+						var localBuffer = DequeueBuffer();
 						fsOutput.Write(localBuffer, 0, localBuffer.Length);
-						Monitor.Pulse(crossWriteBuffer);
-						if (!reachedEnd) Monitor.Wait(crossWriteBuffer);
+						Monitor.Pulse(CrossWriteBuffer);
+						if (!ReachedEnd) Monitor.Wait(CrossWriteBuffer);
 					}
 				}
 			}
@@ -96,12 +96,12 @@ namespace GZipStream
 		 * т.к. относится к static
 		 */
 		[MethodImplAttribute(MethodImplOptions.Synchronized)]
-		static void enqueueBuffer(byte[] buffer) {
-			crossWriteBuffer.Enqueue(buffer);
+		static void EnqueueBuffer(byte[] buffer) {
+			CrossWriteBuffer.Enqueue(buffer);
 		}
 		[MethodImplAttribute(MethodImplOptions.Synchronized)]
-		static byte[] dequeueBuffer() {
-			return crossWriteBuffer.Dequeue();
+		static byte[] DequeueBuffer() {
+			return CrossWriteBuffer.Dequeue();
 		}
 
 		/*
@@ -109,10 +109,10 @@ namespace GZipStream
 		 * состояние. Используется для подачи сигнала
 		 * потокам об окончании чтения из файла.
 		 */
-		static void setReachedEndStatus(bool setStatus) {
-			lock (crossWriteBuffer) {
-				reachedEnd = setStatus;
-				Monitor.Pulse(crossWriteBuffer);	//подает последний сигнал пишущему потоку
+		static void SetReachedEndStatus(bool setStatus) {
+			lock (CrossWriteBuffer) {
+				ReachedEnd = setStatus;
+				Monitor.Pulse(CrossWriteBuffer);	//подает последний сигнал пишущему потоку
 			}
 		}
 	}
@@ -123,11 +123,11 @@ namespace GZipStream
 	 */
     class DefaultGZip
     {
-        public static void doCompress(String fileSource, String fileDestination) {
+        public static void DoCompress(string fileSource, string fileDestination) {
             using (var fsInput = new FileStream(fileSource, FileMode.Open, FileAccess.Read))
                 using (var fsOutput = new FileStream(fileDestination, FileMode.Create, FileAccess.Write))
                     using (var gzipStream = new GZipStream(fsOutput, CompressionMode.Compress)) {
-                        var buffer = new Byte[Constants.bufferSize];
+                        var buffer = new byte[Constants.BufferSize];
 						int temp;
 						while ((temp = fsInput.Read(buffer, 0, buffer.Length)) > 0) {
 							gzipStream.Write(buffer, 0, temp);
@@ -135,11 +135,11 @@ namespace GZipStream
                     }
         }
 
-		public static void doDecompress(String fileSource, String fileDestination) {
+		public static void DoDecompress(string fileSource, string fileDestination) {
 			using (var fsInput = new FileStream(fileSource, FileMode.Open, FileAccess.Read)) 
 				using (var fsOutput = new FileStream(fileDestination, FileMode.Create, FileAccess.Write)) 
 					using (var gzipStream = new GZipStream(fsInput, CompressionMode.Decompress)) {
-						var buffer = new Byte[Constants.bufferSize];
+						var buffer = new byte[Constants.BufferSize];
 						int temp;
 						while ((temp = gzipStream.Read(buffer, 0, buffer.Length)) > 0) {
 							fsOutput.Write(buffer, 0, temp);

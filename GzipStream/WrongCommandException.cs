@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GZipStream
+namespace GzipStreamDemo
 {
     public class WrongCommandException : Exception {
         public WrongCommandException() : base() {}
