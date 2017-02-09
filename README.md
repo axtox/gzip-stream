@@ -2,7 +2,7 @@
 ### Programm for compress and decompress files (C#)
 Created: 14 Feburary 2015
 <br><br>
-Launch this program from console and add arguments like this:
+Program for compression/decompression GZip files in means of multithread. You can launch it via console with possible arguments:
 <br>
 Usage example:
 * <b><i>compress [FILE_PATH] [ZIP_PATH]</b></i>
@@ -16,4 +16,5 @@ Where: <ul> <li> <b><i>compress/decompres</b></i> are commands; </li>
   <li> <b><i>RESULT_FILE_PATH</b></i> - path to store decompressed file (you must add extension to file name).  </li>
 </ul>
 
-This programm works in multicore systems as well as single core systems.
+This programm works in multicore systems as well as single core systems. 
+Check release tab to get latest version!
